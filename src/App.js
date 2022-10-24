@@ -68,7 +68,7 @@ const dummyData = [
 ]
 
 function App() {
-    const [data, dispatch] = useReducer(reducer, dummyData);
+    const [data, dispatch] = useReducer(reducer, []);
     
     const dataId = useRef(0);
     //CREATE
