@@ -22,7 +22,7 @@ const reducer = (state, action) => {
             break;
         }
         case 'EDIT': {
-            newState = state.map((it) => it.id === action.data.id ? {...action.data} : it);
+            newState = state.map((it) => it.id === action.data.id ? action.data : it);
             break;
         }
         default:
@@ -86,14 +86,14 @@ function App() {
         dispatch({type: 'REMOVE', targetId});
     }
     //EDIT
-    const onEdit = (targetId, date, content, emtion) => {
+    const onEdit = (targetId, date, content, emotion) => {
         dispatch({
             type: "EDIT",
             data: {
                 id: targetId,
                 date: new Date(date).getTime(),
                 content,
-                emtion,
+                emotion,
             }
         })
     }
@@ -109,7 +109,7 @@ function App() {
                         <Routes>
                             <Route path='/' element={<Home/>}/>
                             <Route path='/New' element={<New/>}/>
-                            <Route path='/Edit' element={<Edit/>}/>
+                            <Route path='/Edit/:id' element={<Edit/>}/>
                             <Route path='/Diary/:id' element={<Diary/>}/>
                         </Routes>
                     </div>
