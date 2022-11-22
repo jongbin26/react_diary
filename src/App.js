@@ -1,4 +1,4 @@
-import React, { Component, useReducer, useRef } from 'react';
+import React, { Component, useReducer, useRef, useEffect } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './App.css';
 
@@ -9,8 +9,8 @@ import Edit from './pages/Edit';
 
 const reducer = (state, action) => {
     let newState = [];
-    switch(action.type){
-        case 'INIT':{
+    switch (action.type) {
+        case 'INIT': {
             return action.data;
         }
         case 'CREATE': {
@@ -22,95 +22,82 @@ const reducer = (state, action) => {
             break;
         }
         case 'EDIT': {
-            newState = state.map((it) => it.id === action.data.id ? action.data : it);
+            newState = state.map((it) => (it.id === action.data.id ? action.data : it));
             break;
         }
         default:
             return state;
     }
+
+    localStorage.setItem('diary', JSON.stringify(newState));
     return newState;
-}
+};
 
 export const DiaryStateContext = React.createContext();
 export const DiaryDispatchContext = React.createContext();
 
-const dummyData = [
-    {
-        id:1,
-        emotion:1,
-        content: '오늘의 일기1',
-        date: 1666506290509,
-    },
-    {
-        id:2,
-        emotion:2,
-        content: '오늘의 일기2',
-        date: 1666506342831,
-    },
-    {
-        id:3,
-        emotion:3,
-        content: '오늘의 일기3',
-        date: 1666506342837,
-    },
-    {
-        id:4,
-        emotion:4,
-        content: '오늘의 일기4',
-        date: 1666506342857,
-    },
-    {
-        id:5,
-        emotion:5,
-        content: '오늘의 일기5',
-        date: 1666506345837,
-    }
-]
-
 function App() {
-    const [data, dispatch] = useReducer(reducer, dummyData);
-    
+    const [data, dispatch] = useReducer(reducer, []);
+
+    useEffect(() => {
+        const localData = localStorage.getItem('diary');
+        if (localData) {
+            const diaryList = JSON.parse(localData).sort((a, b) => parseInt(b.id) - parseInt(a.id));
+            
+            if(diaryList.length >= 1){
+                dataId.current = parseInt(diaryList[0].id) + 1;
+                dispatch({ type: 'INIT', data: diaryList })
+            }
+        }
+    }, []);
+
     const dataId = useRef(0);
     //CREATE
-    const onCreate = (date,content, emotion) => {
-        dispatch({type: 'CREATE', data: {
-            id: dataId.current,
-            date: new Date(date).getTime(),
-            content,
-            emotion,
-        }})
+    const onCreate = (date, content, emotion) => {
+        dispatch({
+            type: 'CREATE',
+            data: {
+                id: dataId.current,
+                date: new Date(date).getTime(),
+                content,
+                emotion,
+            },
+        });
         dataId.current += 1;
-    }
+    };
     //REMOVE
     const onRemove = (targetId) => {
-        dispatch({type: 'REMOVE', targetId});
-    }
+        dispatch({ type: 'REMOVE', targetId });
+    };
     //EDIT
     const onEdit = (targetId, date, content, emotion) => {
         dispatch({
-            type: "EDIT",
+            type: 'EDIT',
             data: {
                 id: targetId,
                 date: new Date(date).getTime(),
                 content,
                 emotion,
-            }
-        })
-    }
-    
-    
+            },
+        });
+    };
+
     return (
         <DiaryStateContext.Provider value={data}>
-            <DiaryDispatchContext.Provider value={{
-                    onCreate, onEdit, onRemove,
-                }}>
+            <DiaryDispatchContext.Provider
+                value={{
+                    onCreate,
+                    onEdit,
+                    onRemove,
+                }}
+            >
                 <BrowserRouter>
                     <div className="App">
                         <Routes>
-                            <Route path='/' element={<Home/>}/>
-                            <Route path='/New' element={<New/>}/>
-                            <Route path='/Edit/:id' element={<Edit/>}/>
-                            <Route path='/Diary/:id' element={<Diary/>}/>
+                            <Route path="/" element={<Home />} />
+                            <Route path="/New" element={<New />} />
+                            <Route path="/Edit/:id" element={<Edit />} />
+                            <Route path="/Diary/:id" element={<Diary />} />
                         </Routes>
                     </div>
                 </BrowserRouter>
